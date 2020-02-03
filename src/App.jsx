@@ -75,8 +75,7 @@ class App extends Component {
               got_client: true,
               client: {
                 username: this.state.potentialClient.username
-              },
-              potentialClient: null
+              }
             });
             // THIS WILL SEND hairdresser INFO TO CLIENT
             this.hairD_channel.trigger('client-found-hairdresser', {
@@ -88,7 +87,7 @@ class App extends Component {
               start: true
             });
           } else {
-            alert('Too late bro!', 'Another hairdresser beat you to it.');
+            alert('Too late bro!, Another hairdresser beat you to it.');
           }
         }
       );
