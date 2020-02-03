@@ -80,3 +80,23 @@ a {
   justify-content: center;
   align-items: center;
 }
+.start-container {
+  position: fixed;
+  background-color: #ffffff;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  height: calc(100vh - 50px);
+  display: flex;
+  z-index: 3;
+  text-align: center;
+}
+.start-container .start {
+  margin: auto;
+  text-align: center;
+}
+.start-container .start img {
+  height: 50px;
+  width: 50px;
+  margin: auto;
+}

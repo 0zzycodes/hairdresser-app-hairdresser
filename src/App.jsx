@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import Pusher from 'pusher-js';
 import Header from './components/header/header';
 import Footer from './components/footer/footer';
+import loader from './assets/loader.gif';
 import './App.css';
 
 class App extends Component {
@@ -10,24 +11,56 @@ class App extends Component {
     this.state = {
       client: null,
       potentialClient: null,
-      region: {
-        name: 'Toro',
-        latitude: 'response_latitude',
-        longitude: 'response.longitude'
-      },
-      accuracy: null,
-      nearby_alert: false,
+      is_working: false,
+      start: false,
       got_client: false,
-      has_finished_client_hair: false
+      has_finished_client_hair: false,
+      review: null
     };
 
     this.available_hairdressers_channel = null;
     this.hairD_channel = null;
     this.pusher = null;
   }
+  handleUnsubscribe = () => {
+    this.hairD_channel.unbind('client-hairdresser-response');
+    this.pusher.unsubscribe('private-hairD-' + this.state.client.username);
+
+    this.setState({
+      client: null,
+      potentialClient: null,
+      is_working: false,
+      start: false,
+      got_client: false,
+      has_finished_client_hair: false,
+      review: null
+    });
+
+    //  END OF HAIRDRESSER TRANSACTION
+  };
+  handleStart = () => {
+    if (!this.state.has_finished_client_hair) {
+      this.hairD_channel.trigger('client-hairdresser-message', {
+        type: 'STARTING',
+        title: `It about to go down!`,
+        msg: 'Relax, let make you prettier'
+      });
+      this.setState({
+        start: false,
+        is_working: true
+      });
+    }
+    this.hairD_channel.bind('client-hairdresser-message', data => {
+      this.setState({
+        review: data,
+        has_finished_client_hair: true,
+        is_working: false
+      });
+    });
+  };
   handleAccept = () => {
     this.hairD_channel = this.pusher.subscribe(
-      'private-ride-' + this.state.potentialClient.username
+      'private-hairD-' + this.state.potentialClient.username
     );
     this.hairD_channel.bind('pusher:subscription_succeeded', () => {
       this.hairD_channel.trigger('client-hairdresser-response', {
@@ -41,9 +74,7 @@ class App extends Component {
             this.setState({
               got_client: true,
               client: {
-                username: this.state.potentialClient.username,
-                pickup: this.state.potentialClient.pickup,
-                dropoff: this.state.potentialClient.dropoff
+                username: this.state.potentialClient.username
               },
               potentialClient: null
             });
@@ -53,7 +84,9 @@ class App extends Component {
                 name: 'hairdresser Name'
               }
             });
-            this.handleUpdate();
+            this.setState({
+              start: true
+            });
           } else {
             alert('Too late bro!', 'Another hairdresser beat you to it.');
           }
@@ -75,50 +108,10 @@ class App extends Component {
     this.available_hairdressers_channel.bind(
       'client-hairdresser-request',
       client_data => {
-        console.log(client_data);
         this.setState({ potentialClient: client_data });
       }
     );
   }
-  handleUpdate = () => {
-    if (!this.state.has_finished_client_hair) {
-      this.hairD_channel.trigger('client-hairdresser-message', {
-        type: 'NOTIF',
-        title: 'Just a heads up',
-        msg: 'Your hairdresser is near, let your presence be known!'
-      });
-
-      this.setState({
-        nearby_alert: true
-      });
-
-      // this.setState({
-      //   has_finished_client_hair: true
-      // });
-    }
-
-    var diff_in_meter_dropoff = 15;
-
-    if (diff_in_meter_dropoff <= 20) {
-      this.hairD_channel.trigger('client-hairdresser-message', {
-        type: 'near_dropoff',
-        title: 'Brace yourself',
-        msg:
-          "You're very close to your destination. Please prepare your payment."
-      });
-
-      this.hairD_channel.unbind('client-hairdresser-response');
-      this.pusher.unsubscribe('private-ride-' + this.state.client.username);
-
-      this.setState({
-        client: null,
-        got_client: false,
-        has_finished_client_hair: false
-      });
-    }
-
-    //  END OF HAIRDRESSER TRANSACTION
-  };
 
   render() {
     return window.innerWidth < 500 ? (
@@ -126,13 +119,40 @@ class App extends Component {
         <Header />
         {this.state.potentialClient ? (
           <div className="prompt-box">
-            <h4>{`You got a client! ${this.state.potentialClient.name}`}</h4>
+            <h4>{`You got a client! ${this.state.potentialClient.username}`}</h4>
             <div className="promp-box-footer">
               <button className="btn" onClick={this.handleDecline}>
                 Later Bro!
               </button>
               <button className="btn" onClick={this.handleAccept}>
                 Gotcha!
+              </button>
+            </div>
+          </div>
+        ) : null}
+        {this.state.start ? (
+          <div className="start">
+            <button className="btn" onClick={this.handleStart}>
+              Start
+            </button>
+          </div>
+        ) : null}
+
+        {this.state.is_working ? (
+          <div className="start-container">
+            <div className="start">
+              <img src={loader} alt="Loader" />
+              <h4>Working...</h4>
+            </div>
+          </div>
+        ) : null}
+        {this.state.review ? (
+          <div className="start-container">
+            <div className="start">
+              <h3>{this.state.review.title}</h3>
+              <h4>Rate: {this.state.review.msg}</h4>
+              <button className="btn" onClick={this.handleUnsubscribe}>
+                Done
               </button>
             </div>
           </div>
