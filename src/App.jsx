@@ -75,7 +75,8 @@ class App extends Component {
               got_client: true,
               client: {
                 username: this.state.potentialClient.username
-              }
+              },
+              potentialClient: null
             });
             // THIS WILL SEND hairdresser INFO TO CLIENT
             this.hairD_channel.trigger('client-found-hairdresser', {

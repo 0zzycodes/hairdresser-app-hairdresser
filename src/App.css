@@ -80,6 +80,9 @@ a {
   justify-content: center;
   align-items: center;
 }
+.prompt-box {
+  text-align: center;
+}
 .start-container {
   position: fixed;
   background-color: #ffffff;
