@@ -1,4 +1,7 @@
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import { createStructuredSelector } from 'reselect';
+import { selectCurrentUser } from '../../redux/user/user.selectors';
 import Pusher from 'pusher-js';
 import Header from '../../components/header/header';
 import Footer from '../../components/footer/footer';
@@ -81,7 +84,7 @@ class Homepage extends Component {
             // THIS WILL SEND hairdresser INFO TO CLIENT
             this.hairD_channel.trigger('client-found-hairdresser', {
               hairdresser: {
-                name: 'hairdresser Name'
+                name: this.props.currentUser.name
               }
             });
             this.setState({
@@ -165,4 +168,8 @@ class Homepage extends Component {
   }
 }
 
-export default Homepage;
+const mapStateToProps = createStructuredSelector({
+  currentUser: selectCurrentUser
+});
+
+export default connect(mapStateToProps)(Homepage);
