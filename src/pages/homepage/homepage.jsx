@@ -38,9 +38,7 @@ class Homepage extends Component {
       has_finished_client_hair: false,
       review: null
     });
-    this.available_hairdressers_channel = this.pusher.subscribe(
-      'private-available-hairdressers'
-    );
+
     //  END OF HAIRDRESSER TRANSACTION
   };
   handleStart = () => {
@@ -89,9 +87,6 @@ class Homepage extends Component {
                 name: this.props.currentUser.name
               }
             });
-            this.available_hairdressers_channel = this.pusher.unsubscribe(
-              'private-available-hairdressers'
-            );
             this.setState({
               start: true
             });
